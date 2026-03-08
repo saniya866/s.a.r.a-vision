@@ -39,13 +39,11 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [showContext, setShowContext] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
