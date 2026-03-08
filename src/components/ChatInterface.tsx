@@ -16,7 +16,6 @@ import {
   Mic,
   MicOff,
   Volume2,
-  Map as MapIcon,
   BookOpen,
   Tag,
 } from "lucide-react";
@@ -153,80 +152,6 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
     return { totalPages, keyTerms: termSet.size };
   }, [documents]);
 
-  // --- Knowledge Map ---
-  const handleGenerateMap = async () => {
-    if (documents.length === 0) {
-      toast.error("Upload a document first.");
-      return;
-    }
-    const contextTexts = documents
-      .filter((d) => d.extracted_text)
-      .map((d) => `[${d.filename}]: ${d.extracted_text}`);
-
-    if (contextTexts.length === 0) {
-      toast.error("Documents still processing. Wait a moment.");
-      return;
-    }
-
-    const mapPrompt = `Analyze the uploaded documents and create a structured Knowledge Map using bullet points. Organize it into these sections:
-
-**Key Entities** — Company names, people, roles, dates, locations
-**Core Skills Required** — Technical and soft skills mentioned
-**Action Items** — Start dates, onboarding steps, deadlines, next steps
-
-Use plain text only. Be thorough but concise.`;
-
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: "📍 Generate Knowledge Map",
-    };
-    setMessages((prev) => [...prev, userMessage]);
-    setLoading(true);
-
-    try {
-      const imageUrls: string[] = [];
-      for (const doc of documents) {
-        if (doc.file_type === "image") {
-          const { data } = supabase.storage.from("documents").getPublicUrl(doc.storage_path);
-          imageUrls.push(data.publicUrl);
-        }
-      }
-
-      const response = await supabase.functions.invoke("rag-chat", {
-        body: {
-          messages: [],
-          userMessage: mapPrompt,
-          imageUrls,
-          contextTexts,
-          documentNames: documents.map((d) => d.filename),
-        },
-      });
-
-      if (response.error) throw response.error;
-      const data = response.data;
-      if (data.error) {
-        toast.error(data.error);
-        setLoading(false);
-        return;
-      }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: data.content,
-          sources: data.sources,
-        },
-      ]);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to generate map");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSend = async () => {
     if (!input.trim() || loading) return;
 
@@ -332,18 +257,6 @@ Use plain text only. Be thorough but concise.`;
             <Tag className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-medium text-foreground">{stats.keyTerms}</span>
             <span className="text-xs text-muted-foreground">Key Terms</span>
-          </div>
-          <div className="ml-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleGenerateMap}
-              disabled={loading}
-              className="text-xs gap-1.5 h-7 border-primary/30 hover:bg-primary/10 hover:text-primary"
-            >
-              <MapIcon className="w-3 h-3" />
-              Generate Map
-            </Button>
           </div>
         </div>
       )}
