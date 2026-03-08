@@ -195,7 +195,8 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); handleDelete(doc); }}
-                className="shrink-0 p-1.5 rounded text-foreground/40 hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all"
+                style={{ display: 'flex' }}
+                className="shrink-0 p-1.5 rounded text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-all"
                 title="Delete file"
               >
                 <Trash2 className="w-4 h-4" />
@@ -211,6 +212,19 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
           )}
         </div>
       </ScrollArea>
+
+      {/* Wipe All Data */}
+      <div className="p-3 border-t border-border/50">
+        <Button
+          variant="destructive"
+          size="sm"
+          className="w-full"
+          onClick={handleWipeAll}
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Wipe All Data
+        </Button>
+      </div>
     </div>
   );
 };
