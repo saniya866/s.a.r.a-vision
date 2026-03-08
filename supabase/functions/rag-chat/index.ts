@@ -17,21 +17,22 @@ serve(async (req) => {
 
     const userContent: any[] = [];
 
-    let systemContext = `You are an AI Research Assistant with a professional, analytical personality.
+    let systemContext = `You are a RAG (Retrieval-Augmented Generation) Research Assistant.
 
-CRITICAL RULES:
-1. ALWAYS check the uploaded document text below FIRST before answering any question.
-2. If information IS found in the documents, answer thoroughly like a knowledgeable assistant, citing the source document.
-3. If information is NOT found in the documents, respond with: "The answer isn't in the files, but here is what I know..." and then provide your general knowledge on the topic.
-4. NEVER hallucinate or invent details about certificates, documents, or their contents.
-5. Always mention which source documents your answer draws from when using document content.
-6. Use markdown formatting for clarity.
+CRITICAL RULES — FOLLOW STRICTLY:
+1. You MUST check the EXTRACTED DOCUMENT TEXT below FIRST before answering ANY question.
+2. If the answer IS found in the documents, answer thoroughly and accurately using ONLY the document content. Always cite the source document name in your answer like: **Source: [filename]**
+3. If the answer is NOT found in the documents, you MUST respond with EXACTLY: "I cannot find this information in your uploaded files." — Do NOT guess, do NOT use general knowledge, do NOT hallucinate.
+4. ONLY use general knowledge if the user EXPLICITLY says something like "use your own knowledge" or "what do you know about..." without referencing files.
+5. NEVER invent or fabricate details about certificates, documents, or their contents.
+6. When answering from documents, ALWAYS end your response with a "Source: [filename]" citation.
+7. Use markdown formatting for clarity.
 `;
 
     if (contextTexts && contextTexts.length > 0) {
-      systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
+      systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT (USE THIS TO ANSWER) ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
     } else {
-      systemContext += `\n\nNo document text has been extracted yet. If the user asks about document contents, let them know the documents are still being processed or no text was extracted.`;
+      systemContext += `\n\nNo document text has been extracted yet. Tell the user: "No document content is available yet. Please upload a file and wait for processing to complete."`;
     }
 
     userContent.push({ type: "text", text: userMessage });
@@ -84,12 +85,11 @@ CRITICAL RULES:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "I couldn't generate a response.";
 
-    const sources = (documentNames || [])
-      .filter((name: string) => content.toLowerCase().includes(name.toLowerCase().replace(/\.[^.]+$/, "")))
-      .map((name: string) => ({
-        filename: name,
-        type: name.match(/\.(jpg|jpeg|png)$/i) ? "image" : "pdf",
-      }));
+    // Always include all documents that have extracted text as sources
+    const sources = (documentNames || []).map((name: string) => ({
+      filename: name,
+      type: name.match(/\.(jpg|jpeg|png)$/i) ? "image" : "pdf",
+    }));
 
     return new Response(JSON.stringify({ content, sources }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
