@@ -12,6 +12,7 @@ import {
   Trash2,
   Brain,
   Plus,
+  RotateCcw,
 } from "lucide-react";
 
 type Document = {
@@ -123,6 +124,29 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
     }
   };
 
+  const handleReIndex = async (doc: Document) => {
+    try {
+      await supabase.from("documents").update({ status: "processing", extracted_text: null }).eq("id", doc.id);
+      onRefresh();
+      const { data: urlData } = supabase.storage.from("documents").getPublicUrl(doc.storage_path);
+      const ocrResponse = await supabase.functions.invoke("ocr-extract", {
+        body: {
+          imageUrl: urlData.publicUrl,
+          documentId: doc.id,
+          fileType: doc.file_type === "pdf" ? "pdf" : "image",
+        },
+      });
+      if (ocrResponse.error) {
+        toast.error(`Re-index failed for ${doc.filename}`);
+      } else {
+        toast.success(`Re-indexed ${doc.filename}`);
+      }
+      onRefresh();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
   const handleWipeAll = async () => {
     if (!confirm("This will delete ALL files, conversations, and messages. Continue?")) return;
     try {
@@ -204,16 +228,26 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-foreground truncate">{doc.filename}</p>
                 <div className="flex items-center gap-1">
-              {doc.status === "ready" ? (
-                    <CheckCircle2 className="w-3 h-3 status-ready" />
+                  {doc.status === "ready" ? (
+                    <>
+                      <span className="text-xs text-green-500 font-medium">✅ Ready</span>
+                    </>
                   ) : (
-                    <Loader2 className="w-3 h-3 status-processing animate-spin" />
+                    <>
+                      <Loader2 className="w-3 h-3 text-muted-foreground animate-spin" />
+                      <span className="text-xs text-muted-foreground">Processing...</span>
+                    </>
                   )}
-                  <span className={`text-xs ${doc.status === "ready" ? "status-ready" : "status-processing"}`}>
-                    {doc.status === "ready" ? "Ready" : "Processing..."}
-                  </span>
                 </div>
               </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleReIndex(doc); }}
+                style={{ display: 'flex' }}
+                className="shrink-0 p-1.5 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                title="Force Re-Index"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
               <button
                 onClick={(e) => { e.stopPropagation(); handleDelete(doc); }}
                 style={{ display: 'flex' }}

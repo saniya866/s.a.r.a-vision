@@ -65,21 +65,15 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
       const contextTexts: string[] = [];
 
       for (const doc of documents) {
-        if (doc.file_type === "image") {
-          const { data } = supabase.storage
-            .from("documents")
-            .getPublicUrl(doc.storage_path);
-          imageUrls.push(data.publicUrl);
-        }
+        // Always get URLs for vision fallback
+        const { data } = supabase.storage
+          .from("documents")
+          .getPublicUrl(doc.storage_path);
+        imageUrls.push(data.publicUrl);
+
         if (doc.extracted_text) {
           contextTexts.push(`[${doc.filename}]: ${doc.extracted_text}`);
         }
-      }
-
-      if (contextTexts.length === 0 && documents.length > 0) {
-        toast.info("Processing text... please ask again in 5 seconds.");
-        setLoading(false);
-        return;
       }
 
       if (documents.length === 0) {
@@ -266,7 +260,6 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
             placeholder="Ask about your documents or images..."
             className="flex-1 bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
-            disabled={loading}
           />
           <Button
             onClick={handleSend}
