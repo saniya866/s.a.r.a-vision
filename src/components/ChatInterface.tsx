@@ -34,6 +34,37 @@ interface ChatInterfaceProps {
   documents: Document[];
 }
 
+const cleanLatex = (text: string): string => {
+  return text
+    // Remove display math blocks $$...$$ 
+    .replace(/\$\$([\s\S]*?)\$\$/g, (_, inner) => inner.trim())
+    // Remove inline math $...$
+    .replace(/\$(.*?)\$/g, (_, inner) => inner.trim())
+    // Remove \( ... \) and \[ ... \]
+    .replace(/\\\((.+?)\\\)/g, (_, inner) => inner.trim())
+    .replace(/\\\[(.+?)\\\]/g, (_, inner) => inner.trim())
+    // Replace common LaTeX commands with plain text
+    .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '($1) / ($2)')
+    .replace(/\\sqrt\{([^}]*)\}/g, 'sqrt($1)')
+    .replace(/\\text\{([^}]*)\}/g, '$1')
+    .replace(/\\(times|cdot)/g, '×')
+    .replace(/\\pm/g, '±')
+    .replace(/\\leq/g, '≤')
+    .replace(/\\geq/g, '≥')
+    .replace(/\\neq/g, '≠')
+    .replace(/\\approx/g, '≈')
+    .replace(/\\infty/g, '∞')
+    .replace(/\\sum/g, 'sum')
+    .replace(/\\int/g, 'integral')
+    .replace(/\\left/g, '')
+    .replace(/\\right/g, '')
+    .replace(/\\_/g, '_')
+    // Remove remaining backslash commands
+    .replace(/\\[a-zA-Z]+/g, '')
+    // Clean up extra whitespace
+    .replace(/  +/g, ' ');
+};
+
 const ChatInterface = ({ documents }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -171,7 +202,7 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
                 )}
                 <div className={`max-w-[75%] ${msg.role === "user" ? "chat-bubble-user" : "chat-bubble-assistant"} px-4 py-3`}>
                   <div className="prose prose-sm prose-invert max-w-none [&>p]:text-sm [&>p]:leading-relaxed [&>ul]:text-sm [&>ol]:text-sm">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown>{cleanLatex(msg.content)}</ReactMarkdown>
                   </div>
 
                   {msg.sources && msg.sources.length > 0 && (
