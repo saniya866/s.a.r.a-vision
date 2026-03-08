@@ -56,14 +56,14 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
 
         if (uploadError) throw uploadError;
 
-        // Insert document record with "processing" status for images
+        // Insert document record with "processing" status
         const { data: docData, error: dbError } = await supabase
           .from("documents")
           .insert({
             filename: file.name,
             file_type: isPdf ? "pdf" : "image",
             storage_path: storagePath,
-            status: isImage ? "processing" : "ready",
+            status: "processing",
             file_size: file.size,
           })
           .select()
@@ -71,11 +71,11 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
 
         if (dbError) throw dbError;
 
-        toast.success(`Uploaded ${file.name}`);
+        toast.success(`Uploaded ${file.name} — extracting text...`);
         onRefresh();
 
-        // For images, trigger OCR extraction via edge function
-        if (isImage && docData) {
+        // Trigger text extraction for both PDFs and images
+        if (docData) {
           const { data: urlData } = supabase.storage
             .from("documents")
             .getPublicUrl(storagePath);
@@ -85,19 +85,20 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
               body: {
                 imageUrl: urlData.publicUrl,
                 documentId: docData.id,
+                fileType: isPdf ? "pdf" : "image",
               },
             });
 
             if (ocrResponse.error) {
-              console.error("OCR error:", ocrResponse.error);
-              toast.error(`OCR failed for ${file.name}`);
+              console.error("Extraction error:", ocrResponse.error);
+              toast.error(`Text extraction failed for ${file.name}`);
             } else {
               toast.success(`Text extracted from ${file.name}`);
             }
             onRefresh();
           } catch (ocrErr) {
-            console.error("OCR invoke error:", ocrErr);
-            toast.error(`OCR failed for ${file.name}`);
+            console.error("Extraction invoke error:", ocrErr);
+            toast.error(`Text extraction failed for ${file.name}`);
             onRefresh();
           }
         }
