@@ -64,19 +64,10 @@ const Auth = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
+              {loading ? "Loading..." : "Sign In"}
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </form>
-
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-            </button>
-          </div>
         </div>
       </div>
     </div>
