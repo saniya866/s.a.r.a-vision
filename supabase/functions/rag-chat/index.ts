@@ -92,8 +92,9 @@ CRITICAL RULES — FOLLOW WITHOUT EXCEPTION:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "I couldn't generate a response.";
 
-    // Always include all documents that have extracted text as sources
-    const sources = (documentNames || []).map((name: string) => ({
+    // Deduplicate sources by filename
+    const uniqueNames = [...new Set(documentNames || [])] as string[];
+    const sources = uniqueNames.map((name: string) => ({
       filename: name,
       type: name.match(/\.(jpg|jpeg|png)$/i) ? "image" : "pdf",
     }));

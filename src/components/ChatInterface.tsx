@@ -176,12 +176,11 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
 
                   {msg.sources && msg.sources.length > 0 && (
                     <div className="mt-3 pt-2 border-t border-border/30">
-                      <p className="text-xs text-muted-foreground mb-1">Sources:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {msg.sources.map((src, i) => (
+                      <div className="flex flex-wrap gap-1.5">
+                        {[...new Map(msg.sources.map((s) => [s.filename, s])).values()].map((src, i) => (
                           <span
                             key={i}
-                            className="inline-flex items-center gap-1 text-xs bg-secondary/50 text-muted-foreground px-2 py-0.5 rounded-md"
+                            className="inline-flex items-center gap-1 text-[11px] font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20"
                           >
                             <FileText className="w-3 h-3" />
                             {src.filename}
