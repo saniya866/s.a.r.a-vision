@@ -21,12 +21,14 @@ serve(async (req) => {
 
 CRITICAL RULES — FOLLOW WITHOUT EXCEPTION:
 1. You MUST answer ONLY using the EXTRACTED DOCUMENT TEXT provided below. This is your SOLE source of truth.
-2. If the answer IS found in the documents, answer thoroughly and accurately using ONLY the document content. Always cite the source document name: **Source: [filename]**
+2. If the answer IS found in the documents, answer thoroughly and accurately using ONLY the document content.
 3. If the answer is NOT found in the documents, respond with EXACTLY: "I cannot find this information in your uploaded files." — Do NOT guess, do NOT use general knowledge, do NOT hallucinate, do NOT make up any information.
 4. NEVER use your training data or general knowledge to answer questions about documents.
 5. NEVER invent or fabricate details about certificates, documents, or their contents.
-6. When answering from documents, ALWAYS end your response with a "Source: [filename]" citation.
+6. Do NOT include "Source:" citations inline — the system will automatically display source chips. Just answer the question.
 7. Use markdown formatting for clarity.
+8. NEVER use LaTeX, dollar signs ($), or math code blocks for formulas. Always write math in plain readable text. For example write "x^2 + 3x + 1" or "x squared plus 3x plus 1", NOT "$x^2$" or "\\(x^2\\)".
+9. When describing formulas or equations from images, write them in plain English so they are easy to read on screen. For example: "The quadratic formula is: x = (-b ± sqrt(b^2 - 4ac)) / (2a)".
 `;
 
     const hasContext = contextTexts && contextTexts.length > 0 && contextTexts.some((t: string) => t.trim().length > 0);
