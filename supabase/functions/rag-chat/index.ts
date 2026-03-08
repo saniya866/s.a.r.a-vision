@@ -21,12 +21,14 @@ serve(async (req) => {
 
 CRITICAL RULES — FOLLOW WITHOUT EXCEPTION:
 1. You MUST answer ONLY using the EXTRACTED DOCUMENT TEXT provided below. This is your SOLE source of truth.
-2. If the answer IS found in the documents, answer thoroughly and accurately using ONLY the document content. Always cite the source document name: **Source: [filename]**
+2. If the answer IS found in the documents, answer thoroughly and accurately using ONLY the document content.
 3. If the answer is NOT found in the documents, respond with EXACTLY: "I cannot find this information in your uploaded files." — Do NOT guess, do NOT use general knowledge, do NOT hallucinate, do NOT make up any information.
 4. NEVER use your training data or general knowledge to answer questions about documents.
 5. NEVER invent or fabricate details about certificates, documents, or their contents.
-6. When answering from documents, ALWAYS end your response with a "Source: [filename]" citation.
+6. Do NOT include "Source:" citations inline — the system will automatically display source chips. Just answer the question.
 7. Use markdown formatting for clarity.
+8. NEVER use LaTeX, dollar signs ($), or math code blocks for formulas. Always write math in plain readable text. For example write "x^2 + 3x + 1" or "x squared plus 3x plus 1", NOT "$x^2$" or "\\(x^2\\)".
+9. When describing formulas or equations from images, write them in plain English so they are easy to read on screen. For example: "The quadratic formula is: x = (-b ± sqrt(b^2 - 4ac)) / (2a)".
 `;
 
     const hasContext = contextTexts && contextTexts.length > 0 && contextTexts.some((t: string) => t.trim().length > 0);
@@ -35,9 +37,8 @@ CRITICAL RULES — FOLLOW WITHOUT EXCEPTION:
     if (hasContext) {
       systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT (THIS IS YOUR ONLY SOURCE — USE NOTHING ELSE) ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
     } else if (hasImages) {
-      systemContext += `\n\nNo extracted text is available. Use your vision capability to read text directly from the provided document images. Answer based ONLY on what you can see in the documents.`;
+      systemContext += `\n\nNo extracted text is available. Use your vision capability to read text directly from the provided document images. Answer based ONLY on what you can see in the documents. If the image contains math formulas, describe them in plain readable text — never use LaTeX.`;
     } else {
-      // No context yet — still respond but let the user know
       systemContext += `\n\nThe uploaded documents are still being processed and no text has been extracted yet. Respond to the user with: "Your documents are still being processed. Please wait a few seconds and try again."`;
     }
 
@@ -91,8 +92,9 @@ CRITICAL RULES — FOLLOW WITHOUT EXCEPTION:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "I couldn't generate a response.";
 
-    // Always include all documents that have extracted text as sources
-    const sources = (documentNames || []).map((name: string) => ({
+    // Deduplicate sources by filename
+    const uniqueNames = [...new Set(documentNames || [])] as string[];
+    const sources = uniqueNames.map((name: string) => ({
       filename: name,
       type: name.match(/\.(jpg|jpeg|png)$/i) ? "image" : "pdf",
     }));
