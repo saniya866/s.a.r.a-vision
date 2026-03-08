@@ -183,13 +183,13 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-foreground truncate">{doc.filename}</p>
                 <div className="flex items-center gap-1">
-                  {doc.status === "ready" ? (
+              {doc.status === "ready" ? (
                     <CheckCircle2 className="w-3 h-3 status-ready" />
                   ) : (
                     <Loader2 className="w-3 h-3 status-processing animate-spin" />
                   )}
                   <span className={`text-xs ${doc.status === "ready" ? "status-ready" : "status-processing"}`}>
-                    {doc.status === "ready" ? "Ready" : "Processing"}
+                    {doc.status === "ready" ? "Ready" : "Processing..."}
                   </span>
                 </div>
               </div>

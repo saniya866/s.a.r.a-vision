@@ -4,22 +4,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Brain, Mail, Lock, ArrowRight } from "lucide-react";
+import { Brain, Mail, Lock, ArrowRight, UserPlus } from "lucide-react";
 
 const Auth = () => {
-  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      navigate("/");
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+          },
+        });
+        if (error) throw error;
+        toast.success("Account created! You are now signed in.");
+        navigate("/");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        navigate("/");
+      }
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -39,6 +52,25 @@ const Auth = () => {
         </div>
 
         <div className="glass-panel rounded-xl p-6">
+          <div className="flex gap-2 mb-6">
+            <Button
+              variant={!isSignUp ? "default" : "outline"}
+              className="flex-1"
+              onClick={() => setIsSignUp(false)}
+              type="button"
+            >
+              Sign In
+            </Button>
+            <Button
+              variant={isSignUp ? "default" : "outline"}
+              className="flex-1"
+              onClick={() => setIsSignUp(true)}
+              type="button"
+            >
+              Sign Up
+            </Button>
+          </div>
+
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="relative">
               <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
@@ -64,8 +96,8 @@ const Auth = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Loading..." : "Sign In"}
-              <ArrowRight className="ml-2 w-4 h-4" />
+              {loading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
+              {isSignUp ? <UserPlus className="ml-2 w-4 h-4" /> : <ArrowRight className="ml-2 w-4 h-4" />}
             </Button>
           </form>
         </div>
