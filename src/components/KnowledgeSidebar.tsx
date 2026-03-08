@@ -194,10 +194,11 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
                 </div>
               </div>
               <button
-                onClick={() => handleDelete(doc)}
-                className="opacity-0 group-hover:opacity-100 p-1 hover:text-destructive transition-all"
+                onClick={(e) => { e.stopPropagation(); handleDelete(doc); }}
+                className="shrink-0 p-1 rounded text-muted-foreground hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all"
+                title="Delete file"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           ))}
