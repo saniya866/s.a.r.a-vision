@@ -212,7 +212,7 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
                 </div>
               </div>
             )}
-          </div>
+            <div ref={bottomRef} />
         </ScrollArea>
 
         {/* Extracted text debug panel */}
