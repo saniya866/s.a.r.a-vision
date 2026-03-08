@@ -142,7 +142,7 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Chat area */}
-        <ScrollArea className="flex-1 p-6" ref={scrollRef}>
+        <ScrollArea className="flex-1 p-6">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 glow-primary">
