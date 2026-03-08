@@ -15,29 +15,25 @@ serve(async (req) => {
 
     const { messages, userMessage, imageUrls, contextTexts, documentNames } = await req.json();
 
-    // Build content parts for multimodal
     const userContent: any[] = [];
 
-    // Strict retrieval system prompt
-    let systemContext = `You are an AI Research Assistant with a professional, analytical personality. You help users understand their documents and images with precision and depth.
+    let systemContext = `You are an AI Research Assistant with a professional, analytical personality.
 
 CRITICAL RULES:
-- ONLY answer based on the text extracted from the uploaded documents provided below.
-- If you cannot find specific text in the uploaded documents to answer a question, say "I cannot find that information in the uploaded files." instead of guessing or making up information.
-- NEVER hallucinate or invent details about certificates, documents, or their contents.
-- Cite specific sources when referencing uploaded documents.
-- Use markdown formatting for clarity.
-- Always mention which source documents your answer draws from.
-
+1. ALWAYS check the uploaded document text below FIRST before answering any question.
+2. If information IS found in the documents, answer thoroughly like a knowledgeable assistant, citing the source document.
+3. If information is NOT found in the documents, respond with: "The answer isn't in the files, but here is what I know..." and then provide your general knowledge on the topic.
+4. NEVER hallucinate or invent details about certificates, documents, or their contents.
+5. Always mention which source documents your answer draws from when using document content.
+6. Use markdown formatting for clarity.
 `;
 
     if (contextTexts && contextTexts.length > 0) {
-      systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT (use ONLY this to answer) ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
+      systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
     } else {
       systemContext += `\n\nNo document text has been extracted yet. If the user asks about document contents, let them know the documents are still being processed or no text was extracted.`;
     }
 
-    // Build user message with images
     userContent.push({ type: "text", text: userMessage });
 
     if (imageUrls && imageUrls.length > 0) {
@@ -49,7 +45,6 @@ CRITICAL RULES:
       }
     }
 
-    // Build conversation history
     const conversationMessages = [
       { role: "system", content: systemContext },
       ...(messages || []).map((m: any) => ({ role: m.role, content: m.content })),
@@ -89,7 +84,6 @@ CRITICAL RULES:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "I couldn't generate a response.";
 
-    // Extract sources from document names mentioned in the response
     const sources = (documentNames || [])
       .filter((name: string) => content.toLowerCase().includes(name.toLowerCase().replace(/\.[^.]+$/, "")))
       .map((name: string) => ({
