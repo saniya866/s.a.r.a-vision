@@ -31,8 +31,11 @@ CRITICAL RULES — FOLLOW WITHOUT EXCEPTION:
 
     if (contextTexts && contextTexts.length > 0 && contextTexts.some((t: string) => t.trim().length > 0)) {
       systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT (THIS IS YOUR ONLY SOURCE — USE NOTHING ELSE) ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
+    } else if (imageUrls && imageUrls.length > 0) {
+      // Vision fallback: no extracted text but we have document URLs — tell the model to read them visually
+      systemContext += `\n\nNo extracted text is available. Use your vision capability to read text directly from the provided document images/PDFs. Answer based ONLY on what you can see in the documents.`;
     } else {
-      return new Response(JSON.stringify({ error: "Document text not found in database. Please upload a file and wait for processing to complete." }), {
+      return new Response(JSON.stringify({ error: "Processing text... please ask again in 5 seconds." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
