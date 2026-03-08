@@ -113,8 +113,28 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
   const handleDelete = async (doc: Document) => {
     try {
       await supabase.storage.from("documents").remove([doc.storage_path]);
-      await supabase.from("documents").delete().eq("id", doc.id);
+      const { error } = await supabase.from("documents").delete().eq("id", doc.id);
+      if (error) throw error;
       toast.success("Deleted");
+      onRefresh();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleWipeAll = async () => {
+    if (!confirm("This will delete ALL files, conversations, and messages. Continue?")) return;
+    try {
+      // Delete all storage files
+      const paths = documents.map((d) => d.storage_path);
+      if (paths.length > 0) {
+        await supabase.storage.from("documents").remove(paths);
+      }
+      // Delete all data
+      await supabase.from("messages").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await supabase.from("conversations").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await supabase.from("documents").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      toast.success("All data wiped");
       onRefresh();
     } catch (error: any) {
       toast.error(error.message);
