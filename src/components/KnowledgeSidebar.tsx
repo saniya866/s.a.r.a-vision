@@ -124,6 +124,29 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
     }
   };
 
+  const handleReIndex = async (doc: Document) => {
+    try {
+      await supabase.from("documents").update({ status: "processing", extracted_text: null }).eq("id", doc.id);
+      onRefresh();
+      const { data: urlData } = supabase.storage.from("documents").getPublicUrl(doc.storage_path);
+      const ocrResponse = await supabase.functions.invoke("ocr-extract", {
+        body: {
+          imageUrl: urlData.publicUrl,
+          documentId: doc.id,
+          fileType: doc.file_type === "pdf" ? "pdf" : "image",
+        },
+      });
+      if (ocrResponse.error) {
+        toast.error(`Re-index failed for ${doc.filename}`);
+      } else {
+        toast.success(`Re-indexed ${doc.filename}`);
+      }
+      onRefresh();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
   const handleWipeAll = async () => {
     if (!confirm("This will delete ALL files, conversations, and messages. Continue?")) return;
     try {
