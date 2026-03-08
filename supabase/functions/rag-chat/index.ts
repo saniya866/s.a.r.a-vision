@@ -29,16 +29,16 @@ CRITICAL RULES — FOLLOW WITHOUT EXCEPTION:
 7. Use markdown formatting for clarity.
 `;
 
-    if (contextTexts && contextTexts.length > 0 && contextTexts.some((t: string) => t.trim().length > 0)) {
+    const hasContext = contextTexts && contextTexts.length > 0 && contextTexts.some((t: string) => t.trim().length > 0);
+    const hasImages = imageUrls && imageUrls.length > 0;
+
+    if (hasContext) {
       systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT (THIS IS YOUR ONLY SOURCE — USE NOTHING ELSE) ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
-    } else if (imageUrls && imageUrls.length > 0) {
-      // Vision fallback: no extracted text but we have document URLs — tell the model to read them visually
-      systemContext += `\n\nNo extracted text is available. Use your vision capability to read text directly from the provided document images/PDFs. Answer based ONLY on what you can see in the documents.`;
+    } else if (hasImages) {
+      systemContext += `\n\nNo extracted text is available. Use your vision capability to read text directly from the provided document images. Answer based ONLY on what you can see in the documents.`;
     } else {
-      return new Response(JSON.stringify({ error: "Processing text... please ask again in 5 seconds." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // No context yet — still respond but let the user know
+      systemContext += `\n\nThe uploaded documents are still being processed and no text has been extracted yet. Respond to the user with: "Your documents are still being processed. Please wait a few seconds and try again."`;
     }
 
     userContent.push({ type: "text", text: userMessage });
