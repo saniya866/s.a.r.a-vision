@@ -37,9 +37,8 @@ CRITICAL RULES — FOLLOW WITHOUT EXCEPTION:
     if (hasContext) {
       systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT (THIS IS YOUR ONLY SOURCE — USE NOTHING ELSE) ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
     } else if (hasImages) {
-      systemContext += `\n\nNo extracted text is available. Use your vision capability to read text directly from the provided document images. Answer based ONLY on what you can see in the documents.`;
+      systemContext += `\n\nNo extracted text is available. Use your vision capability to read text directly from the provided document images. Answer based ONLY on what you can see in the documents. If the image contains math formulas, describe them in plain readable text — never use LaTeX.`;
     } else {
-      // No context yet — still respond but let the user know
       systemContext += `\n\nThe uploaded documents are still being processed and no text has been extracted yet. Respond to the user with: "Your documents are still being processed. Please wait a few seconds and try again."`;
     }
 
