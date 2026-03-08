@@ -65,21 +65,15 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
       const contextTexts: string[] = [];
 
       for (const doc of documents) {
-        if (doc.file_type === "image") {
-          const { data } = supabase.storage
-            .from("documents")
-            .getPublicUrl(doc.storage_path);
-          imageUrls.push(data.publicUrl);
-        }
+        // Always get URLs for vision fallback
+        const { data } = supabase.storage
+          .from("documents")
+          .getPublicUrl(doc.storage_path);
+        imageUrls.push(data.publicUrl);
+
         if (doc.extracted_text) {
           contextTexts.push(`[${doc.filename}]: ${doc.extracted_text}`);
         }
-      }
-
-      if (contextTexts.length === 0 && documents.length > 0) {
-        toast.info("Processing text... please ask again in 5 seconds.");
-        setLoading(false);
-        return;
       }
 
       if (documents.length === 0) {
