@@ -12,6 +12,7 @@ import {
   Trash2,
   Brain,
   Plus,
+  RotateCcw,
 } from "lucide-react";
 
 type Document = {

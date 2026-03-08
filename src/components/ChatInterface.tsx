@@ -266,7 +266,6 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
             placeholder="Ask about your documents or images..."
             className="flex-1 bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
-            disabled={loading}
           />
           <Button
             onClick={handleSend}
