@@ -397,7 +397,7 @@ Use plain text only. Be thorough but concise.`;
                   {msg.sources && msg.sources.length > 0 && (
                     <div className="mt-3 pt-2 border-t border-border/30">
                       <div className="flex flex-wrap gap-1.5">
-                        {[...new Map(msg.sources.map((s) => [s.filename, s])).values()].map((src, i) => (
+                        {msg.sources.filter((s, i, arr) => arr.findIndex((x) => x.filename === s.filename) === i).map((src, i) => (
                           <span
                             key={i}
                             className="inline-flex items-center gap-1 text-[11px] font-medium bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20"
