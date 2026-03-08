@@ -16,7 +16,6 @@ import {
   Mic,
   MicOff,
   Volume2,
-  Map as MapIcon,
   BookOpen,
   Tag,
 } from "lucide-react";
