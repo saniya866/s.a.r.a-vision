@@ -226,7 +226,10 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
       <div className="h-14 flex items-center px-6 border-b border-border/50 glass-panel">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-primary" />
-          <h2 className="text-sm font-medium">Multimodal Research Chat</h2>
+          <div>
+            <h2 className="text-sm font-bold tracking-wide">S.A.R.A. VISION</h2>
+            <p className="text-[10px] text-muted-foreground -mt-0.5">Smart Analytics & Research Assistant</p>
+          </div>
         </div>
         <div className="ml-auto flex items-center gap-3">
           <span className="text-xs text-muted-foreground font-mono">
