@@ -258,18 +258,6 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
             <span className="text-xs font-medium text-foreground">{stats.keyTerms}</span>
             <span className="text-xs text-muted-foreground">Key Terms</span>
           </div>
-          <div className="ml-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleGenerateMap}
-              disabled={loading}
-              className="text-xs gap-1.5 h-7 border-primary/30 hover:bg-primary/10 hover:text-primary"
-            >
-              <MapIcon className="w-3 h-3" />
-              Generate Map
-            </Button>
-          </div>
         </div>
       )}
 
