@@ -113,8 +113,28 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
   const handleDelete = async (doc: Document) => {
     try {
       await supabase.storage.from("documents").remove([doc.storage_path]);
-      await supabase.from("documents").delete().eq("id", doc.id);
+      const { error } = await supabase.from("documents").delete().eq("id", doc.id);
+      if (error) throw error;
       toast.success("Deleted");
+      onRefresh();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleWipeAll = async () => {
+    if (!confirm("This will delete ALL files, conversations, and messages. Continue?")) return;
+    try {
+      // Delete all storage files
+      const paths = documents.map((d) => d.storage_path);
+      if (paths.length > 0) {
+        await supabase.storage.from("documents").remove(paths);
+      }
+      // Delete all data
+      await supabase.from("messages").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await supabase.from("conversations").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await supabase.from("documents").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      toast.success("All data wiped");
       onRefresh();
     } catch (error: any) {
       toast.error(error.message);
@@ -195,7 +215,8 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); handleDelete(doc); }}
-                className="shrink-0 p-1.5 rounded text-foreground/40 hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all"
+                style={{ display: 'flex' }}
+                className="shrink-0 p-1.5 rounded text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-all"
                 title="Delete file"
               >
                 <Trash2 className="w-4 h-4" />
@@ -211,6 +232,19 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
           )}
         </div>
       </ScrollArea>
+
+      {/* Wipe All Data */}
+      <div className="p-3 border-t border-border/50">
+        <Button
+          variant="destructive"
+          size="sm"
+          className="w-full"
+          onClick={handleWipeAll}
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Wipe All Data
+        </Button>
+      </div>
     </div>
   );
 };

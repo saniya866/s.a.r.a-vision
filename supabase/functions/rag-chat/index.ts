@@ -17,22 +17,25 @@ serve(async (req) => {
 
     const userContent: any[] = [];
 
-    let systemContext = `You are a RAG (Retrieval-Augmented Generation) Research Assistant.
+    let systemContext = `You are a STRICT RAG (Retrieval-Augmented Generation) Research Assistant.
 
-CRITICAL RULES — FOLLOW STRICTLY:
-1. You MUST check the EXTRACTED DOCUMENT TEXT below FIRST before answering ANY question.
-2. If the answer IS found in the documents, answer thoroughly and accurately using ONLY the document content. Always cite the source document name in your answer like: **Source: [filename]**
-3. If the answer is NOT found in the documents, you MUST respond with EXACTLY: "I cannot find this information in your uploaded files." — Do NOT guess, do NOT use general knowledge, do NOT hallucinate.
-4. ONLY use general knowledge if the user EXPLICITLY says something like "use your own knowledge" or "what do you know about..." without referencing files.
+CRITICAL RULES — FOLLOW WITHOUT EXCEPTION:
+1. You MUST answer ONLY using the EXTRACTED DOCUMENT TEXT provided below. This is your SOLE source of truth.
+2. If the answer IS found in the documents, answer thoroughly and accurately using ONLY the document content. Always cite the source document name: **Source: [filename]**
+3. If the answer is NOT found in the documents, respond with EXACTLY: "I cannot find this information in your uploaded files." — Do NOT guess, do NOT use general knowledge, do NOT hallucinate, do NOT make up any information.
+4. NEVER use your training data or general knowledge to answer questions about documents.
 5. NEVER invent or fabricate details about certificates, documents, or their contents.
 6. When answering from documents, ALWAYS end your response with a "Source: [filename]" citation.
 7. Use markdown formatting for clarity.
 `;
 
-    if (contextTexts && contextTexts.length > 0) {
-      systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT (USE THIS TO ANSWER) ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
+    if (contextTexts && contextTexts.length > 0 && contextTexts.some((t: string) => t.trim().length > 0)) {
+      systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT (THIS IS YOUR ONLY SOURCE — USE NOTHING ELSE) ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
     } else {
-      systemContext += `\n\nNo document text has been extracted yet. Tell the user: "No document content is available yet. Please upload a file and wait for processing to complete."`;
+      return new Response(JSON.stringify({ error: "Document text not found in database. Please upload a file and wait for processing to complete." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     userContent.push({ type: "text", text: userMessage });

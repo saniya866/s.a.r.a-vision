@@ -76,6 +76,18 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
         }
       }
 
+      if (contextTexts.length === 0 && documents.length > 0) {
+        toast.error("Document text not found in database. Files may still be processing.");
+        setLoading(false);
+        return;
+      }
+
+      if (documents.length === 0) {
+        toast.error("No documents uploaded. Please upload a file first.");
+        setLoading(false);
+        return;
+      }
+
       const response = await supabase.functions.invoke("rag-chat", {
         body: {
           messages: messages.map((m) => ({ role: m.role, content: m.content })),
@@ -87,8 +99,13 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
       });
 
       if (response.error) throw response.error;
-
+      
       const data = response.data;
+      if (data.error) {
+        toast.error(data.error);
+        setLoading(false);
+        return;
+      }
 
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
