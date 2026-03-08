@@ -21,6 +21,7 @@ type Document = {
   status: string;
   created_at: string;
   storage_path: string;
+  extracted_text?: string | null;
 };
 
 interface KnowledgeSidebarProps {
@@ -55,18 +56,52 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
 
         if (uploadError) throw uploadError;
 
-        const { error: dbError } = await supabase.from("documents").insert({
-          filename: file.name,
-          file_type: isPdf ? "pdf" : "image",
-          storage_path: storagePath,
-          status: "ready",
-          file_size: file.size,
-        });
+        // Insert document record with "processing" status for images
+        const { data: docData, error: dbError } = await supabase
+          .from("documents")
+          .insert({
+            filename: file.name,
+            file_type: isPdf ? "pdf" : "image",
+            storage_path: storagePath,
+            status: isImage ? "processing" : "ready",
+            file_size: file.size,
+          })
+          .select()
+          .single();
 
         if (dbError) throw dbError;
+
         toast.success(`Uploaded ${file.name}`);
+        onRefresh();
+
+        // For images, trigger OCR extraction via edge function
+        if (isImage && docData) {
+          const { data: urlData } = supabase.storage
+            .from("documents")
+            .getPublicUrl(storagePath);
+
+          try {
+            const ocrResponse = await supabase.functions.invoke("ocr-extract", {
+              body: {
+                imageUrl: urlData.publicUrl,
+                documentId: docData.id,
+              },
+            });
+
+            if (ocrResponse.error) {
+              console.error("OCR error:", ocrResponse.error);
+              toast.error(`OCR failed for ${file.name}`);
+            } else {
+              toast.success(`Text extracted from ${file.name}`);
+            }
+            onRefresh();
+          } catch (ocrErr) {
+            console.error("OCR invoke error:", ocrErr);
+            toast.error(`OCR failed for ${file.name}`);
+            onRefresh();
+          }
+        }
       }
-      onRefresh();
     } catch (error: any) {
       toast.error(error.message);
     } finally {
