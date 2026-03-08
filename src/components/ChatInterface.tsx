@@ -65,14 +65,15 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
       const contextTexts: string[] = [];
 
       for (const doc of documents) {
-        // Always get URLs for vision fallback
-        const { data } = supabase.storage
-          .from("documents")
-          .getPublicUrl(doc.storage_path);
-        imageUrls.push(data.publicUrl);
-
         if (doc.extracted_text) {
           contextTexts.push(`[${doc.filename}]: ${doc.extracted_text}`);
+        }
+        // Only send actual image URLs (not PDFs) for vision
+        if (doc.file_type === "image") {
+          const { data } = supabase.storage
+            .from("documents")
+            .getPublicUrl(doc.storage_path);
+          imageUrls.push(data.publicUrl);
         }
       }
 
