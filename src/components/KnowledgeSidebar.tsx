@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
@@ -12,7 +11,6 @@ import {
   CheckCircle2,
   Trash2,
   Brain,
-  LogOut,
   Plus,
 } from "lucide-react";
 
@@ -31,13 +29,12 @@ interface KnowledgeSidebarProps {
 }
 
 const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
-  const { user, signOut } = useAuth();
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || !user) return;
+    if (!files) return;
 
     setUploading(true);
     try {
@@ -51,7 +48,7 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
           continue;
         }
 
-        const storagePath = `${user.id}/${Date.now()}-${file.name}`;
+        const storagePath = `guest/${Date.now()}-${file.name}`;
         const { error: uploadError } = await supabase.storage
           .from("documents")
           .upload(storagePath, file);
@@ -59,7 +56,6 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
         if (uploadError) throw uploadError;
 
         const { error: dbError } = await supabase.from("documents").insert({
-          user_id: user.id,
           filename: file.name,
           file_type: isPdf ? "pdf" : "image",
           storage_path: storagePath,
@@ -179,16 +175,6 @@ const KnowledgeSidebar = ({ documents, onRefresh }: KnowledgeSidebarProps) => {
           )}
         </div>
       </ScrollArea>
-
-      {/* User */}
-      <div className="p-3 border-t border-border/50">
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-          <button onClick={signOut} className="p-1.5 hover:bg-secondary rounded-md transition-colors">
-            <LogOut className="w-3.5 h-3.5 text-muted-foreground" />
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
@@ -34,7 +33,6 @@ interface ChatInterfaceProps {
 }
 
 const ChatInterface = ({ documents }: ChatInterfaceProps) => {
-  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,7 +45,7 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim() || !user || loading) return;
+    if (!input.trim() || loading) return;
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -60,7 +58,6 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
     setLoading(true);
 
     try {
-      // Get image URLs for vision
       const imageUrls: string[] = [];
       const contextTexts: string[] = [];
 
@@ -107,7 +104,6 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
 
   return (
     <div className="flex-1 flex flex-col h-screen">
-      {/* Header */}
       <div className="h-14 flex items-center px-6 border-b border-border/50 glass-panel">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-primary" />
@@ -120,7 +116,6 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
         </div>
       </div>
 
-      {/* Messages */}
       <ScrollArea className="flex-1 p-6" ref={scrollRef}>
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -194,7 +189,6 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
         </div>
       </ScrollArea>
 
-      {/* Input */}
       <div className="p-4 border-t border-border/50">
         <div className="max-w-3xl mx-auto flex gap-2">
           <input
