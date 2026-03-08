@@ -202,7 +202,7 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
                 )}
                 <div className={`max-w-[75%] ${msg.role === "user" ? "chat-bubble-user" : "chat-bubble-assistant"} px-4 py-3`}>
                   <div className="prose prose-sm prose-invert max-w-none [&>p]:text-sm [&>p]:leading-relaxed [&>ul]:text-sm [&>ol]:text-sm">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown>{cleanLatex(msg.content)}</ReactMarkdown>
                   </div>
 
                   {msg.sources && msg.sources.length > 0 && (
