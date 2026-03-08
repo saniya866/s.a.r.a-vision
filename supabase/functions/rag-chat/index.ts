@@ -18,20 +18,23 @@ serve(async (req) => {
     // Build content parts for multimodal
     const userContent: any[] = [];
 
-    // Add context from documents
+    // Strict retrieval system prompt
     let systemContext = `You are an AI Research Assistant with a professional, analytical personality. You help users understand their documents and images with precision and depth.
 
-When answering:
-- Be thorough but concise
-- Cite specific sources when referencing uploaded documents
-- If analyzing images, describe what you see in detail
-- Use markdown formatting for clarity
-- Always mention which source documents your answer draws from
+CRITICAL RULES:
+- ONLY answer based on the text extracted from the uploaded documents provided below.
+- If you cannot find specific text in the uploaded documents to answer a question, say "I cannot find that information in the uploaded files." instead of guessing or making up information.
+- NEVER hallucinate or invent details about certificates, documents, or their contents.
+- Cite specific sources when referencing uploaded documents.
+- Use markdown formatting for clarity.
+- Always mention which source documents your answer draws from.
 
 `;
 
     if (contextTexts && contextTexts.length > 0) {
-      systemContext += `\n\nDocument context:\n${contextTexts.join("\n\n")}`;
+      systemContext += `\n\n--- EXTRACTED DOCUMENT TEXT (use ONLY this to answer) ---\n${contextTexts.join("\n\n---\n\n")}\n--- END OF DOCUMENT TEXT ---`;
+    } else {
+      systemContext += `\n\nNo document text has been extracted yet. If the user asks about document contents, let them know the documents are still being processed or no text was extracted.`;
     }
 
     // Build user message with images

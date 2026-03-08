@@ -2,3 +2,6 @@ project_id = "epqnuckodqucsafoujmg"
 
 [functions.rag-chat]
 verify_jwt = false
+
+[functions.ocr-extract]
+verify_jwt = false
