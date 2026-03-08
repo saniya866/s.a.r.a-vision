@@ -30,7 +30,13 @@ serve(async (req) => {
       const pdfResponse = await fetch(imageUrl);
       if (!pdfResponse.ok) throw new Error(`Failed to download PDF: ${pdfResponse.status}`);
       const pdfBuffer = await pdfResponse.arrayBuffer();
-      const base64Pdf = btoa(String.fromCharCode(...new Uint8Array(pdfBuffer)));
+      const bytes = new Uint8Array(pdfBuffer);
+      let binary = "";
+      const chunkSize = 8192;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+      }
+      const base64Pdf = btoa(binary);
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
