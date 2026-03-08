@@ -77,7 +77,7 @@ const ChatInterface = ({ documents }: ChatInterfaceProps) => {
       }
 
       if (contextTexts.length === 0 && documents.length > 0) {
-        toast.error("Document text not found in database. Files may still be processing.");
+        toast.info("Processing text... please ask again in 5 seconds.");
         setLoading(false);
         return;
       }
