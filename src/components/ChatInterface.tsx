@@ -341,7 +341,7 @@ Use plain text only. Be thorough but concise.`;
               disabled={loading}
               className="text-xs gap-1.5 h-7 border-primary/30 hover:bg-primary/10 hover:text-primary"
             >
-              <Map className="w-3 h-3" />
+              <MapIcon className="w-3 h-3" />
               Generate Map
             </Button>
           </div>
